@@ -57,12 +57,11 @@ async def create_book(title: str, author: str):
         BookAlreadyExistsException: If book with same title already exists
     """
     # Validate input
-    if not title or not author:
+    if not (3 <= len(title.strip()) <= 100):
         raise InvalidBookDataException(
             detail="Title and author are required",
             validation_errors={
-                "title": "Title cannot be empty" if not title else None,
-                "author": "Author cannot be empty" if not author else None,
+                "title": "Title must be between 3 and 100 characters long"
             },
         )
 
