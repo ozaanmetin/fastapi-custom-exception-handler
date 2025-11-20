@@ -39,7 +39,7 @@ pip install -r requirements.txt
 ## Running the Application
 
 ```bash
-python app/main.py
+python main.py
 ```
 
 The API will be available at `http://localhost:8000`\
@@ -51,7 +51,7 @@ Swagger will be available at `http://localhost:8000/docs`
 
 #### Simple exception with default values:
 ```python
-from app.exceptions import BookNotFoundException
+from exceptions import BookNotFoundException
 
 raise BookNotFoundException(book_id=123)
 # Response: {"detail": "Book with ID 123 not found", "error_code": "book_not_found"}
@@ -59,7 +59,7 @@ raise BookNotFoundException(book_id=123)
 
 #### Exception with custom detail:
 ```python
-from app.exceptions import UnauthorizedException
+from exceptions import UnauthorizedException
 
 raise UnauthorizedException(detail="Invalid token provided")
 # Response: {"detail": "Invalid token provided", "error_code": "unauthorized"}
@@ -67,7 +67,7 @@ raise UnauthorizedException(detail="Invalid token provided")
 
 #### Exception with validation errors:
 ```python
-from app.exceptions import InvalidBookDataException
+from exceptions import InvalidBookDataException
 
 raise InvalidBookDataException(
     detail="Validation failed",
@@ -83,7 +83,7 @@ raise InvalidBookDataException(
 ### Creating Your Own Exception Types
 
 ```python
-from app.exceptions.base import ApiException
+from exceptions.base import ApiException
 
 class UserNotFoundException(ApiException):
     status_code = 404
