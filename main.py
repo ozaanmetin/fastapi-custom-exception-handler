@@ -1,13 +1,8 @@
 from fastapi import FastAPI, Path
 
-from exceptions import (
-    ApiException,
-    BookAlreadyExistsException,
-    BookNotFoundException,
-    InvalidBookDataException,
-    UnauthorizedException,
-)
-from handlers.exception_handler import api_exception_handler
+from exceptions import ApiException, UnauthorizedException
+from exception_handler import api_exception_handler
+from services import BookService
 
 app = FastAPI(title="Custom Exception Handler Demo")
 
@@ -21,6 +16,9 @@ books_db = {
     3: {"id": 3, "title": "To Kill a Mockingbird", "author": "Harper Lee"},
 }
 
+# Initialize book service
+book_service = BookService(books_db)
+
 
 @app.get("/")
 async def root():
@@ -31,7 +29,8 @@ async def root():
 @app.get("/books")
 async def get_books():
     """Get all books."""
-    return {"books": list(books_db.values())}
+    books = book_service.get_all_books()
+    return {"books": books}
 
 
 @app.get("/books/{book_id}")
@@ -41,10 +40,8 @@ async def get_book(book_id: int = Path(..., description="The ID of the book")):
 
     Raises BookNotFoundException if book doesn't exist.
     """
-    if book_id not in books_db:
-        raise BookNotFoundException(book_id=book_id)
-
-    return {"book": books_db[book_id]}
+    book = book_service.get_book_by_id(book_id)
+    return {"book": book}
 
 
 @app.post("/books")
@@ -56,25 +53,7 @@ async def create_book(title: str, author: str):
         InvalidBookDataException: If title or author is empty
         BookAlreadyExistsException: If book with same title already exists
     """
-    # Validate input
-    if not (3 <= len(title.strip()) <= 100):
-        raise InvalidBookDataException(
-            detail="Title and author are required",
-            validation_errors={
-                "title": "Title must be between 3 and 100 characters long"
-            },
-        )
-
-    # Check if book already exists
-    for book in books_db.values():
-        if book["title"].lower() == title.lower():
-            raise BookAlreadyExistsException(book_title=title)
-
-    # Create new book
-    new_id = max(books_db.keys()) + 1 if books_db else 1
-    new_book = {"id": new_id, "title": title, "author": author}
-    books_db[new_id] = new_book
-
+    new_book = book_service.create_book(title=title, author=author)
     return {"message": "Book created successfully", "book": new_book}
 
 
@@ -85,10 +64,7 @@ async def delete_book(book_id: int = Path(..., description="The ID of the book")
 
     Raises BookNotFoundException if book doesn't exist.
     """
-    if book_id not in books_db:
-        raise BookNotFoundException(book_id=book_id)
-
-    deleted_book = books_db.pop(book_id)
+    deleted_book = book_service.delete_book(book_id)
     return {"message": "Book deleted successfully", "book": deleted_book}
 
 
